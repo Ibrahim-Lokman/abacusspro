@@ -30,8 +30,8 @@ class _StickAndBallsState extends State<StickAndBalls> {
 
   final double ballSize = 30;
   final double stickStart = 40;
-  final double section1Width = 250;
-  final double section2Width = 150;
+  late double section1Width;
+  late double section2Width;
   final double lineWidth = 4;
   final double lineHeight = 40;
 
@@ -41,9 +41,32 @@ class _StickAndBallsState extends State<StickAndBalls> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Calculate section widths based on screen size
+    double screenWidth = MediaQuery.of(context).size.width;
+    double totalAvailableWidth = screenWidth - (2 * stickStart);
+
+    // Distribute available width between sections (60% for section1, 40% for section2)
+    section1Width = totalAvailableWidth * 0.6;
+    section2Width = totalAvailableWidth * 0.4;
+
     // Calculate maximum positions for each section
     maxSection1Position = stickStart + section1Width - ballSize;
     maxSection2Position = stickStart + section1Width + section2Width - ballSize;
+
+    // Update initial ball positions if needed
+    _updateInitialBallPositions();
+  }
+
+  void _updateInitialBallPositions() {
+    // Update section 1 balls
+    double spacing1 = section1Width / (section1Balls.length + 1);
+    for (int i = 0; i < section1Balls.length; i++) {
+      section1Balls[i].value = stickStart + (spacing1 * (i + 1));
+    }
+
+    // Update section 2 ball
+    double spacing2 = section2Width / 2;
+    section2Balls[0].value = stickStart + section1Width + spacing2;
   }
 
   @override
