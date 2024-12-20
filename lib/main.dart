@@ -79,12 +79,12 @@ class _MultipleSticksState extends State<MultipleSticks> {
     double spacing1 =
         ballSize; // Each ball takes up one ball size worth of space
     for (int i = 0; i < 4; i++) {
-      stickSections[stickIndex][i].value = stickStart + (spacing1 * (i + 1));
+      stickSections[stickIndex][i].value = stickStart + (spacing1 * (i));
     }
 
     // Update section 2 ball (last ball)
     stickSections[stickIndex][4].value =
-        stickStart + section1Widths[stickIndex] + ballSize;
+        stickStart + section1Widths[stickIndex] + 0;
   }
 
   @override
