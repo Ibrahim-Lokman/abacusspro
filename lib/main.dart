@@ -1,3 +1,4 @@
+import 'package:abacusspro/horizontal_board.dart';
 import 'package:abacusspro/multiple_sticks_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MultipleSticks(),
+      home: HorMultipleSticks(),
+      // home: MultipleSticks(),
     );
   }
 }
