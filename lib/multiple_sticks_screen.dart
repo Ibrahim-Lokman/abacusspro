@@ -196,16 +196,38 @@ class _MultipleSticksState extends State<MultipleSticks> {
               width: ballSize,
               height: ballSize,
               decoration: BoxDecoration(
-                color: color,
                 shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Colors.black, Colors.red],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(
+                        2, 2), // Shadow for the "bottom right" to create depth
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.7),
+                    blurRadius: 6,
+                    offset: const Offset(-2,
+                        -2), // Highlight for the "top left" to enhance 3D look
                   ),
                 ],
               ),
+              // decoration: BoxDecoration(
+              //   color: color,
+              //   shape: BoxShape.circle,
+              //   boxShadow: [
+              //     BoxShadow(
+              //       color: Colors.black.withOpacity(0.2),
+              //       blurRadius: 4,
+              //       offset: const Offset(0, 2),
+              //     ),
+              //   ],
+              // ),
             ),
           ),
         );
