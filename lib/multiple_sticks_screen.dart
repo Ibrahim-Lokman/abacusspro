@@ -1,20 +1,94 @@
 import 'package:flutter/material.dart';
 
+// Theme configuration class
+class StickTheme {
+  final double ballSize;
+  final double stickStart;
+  final double lineWidth;
+  final double lineHeight;
+  final double verticalSpacing;
+  final Color ballColor;
+  final Color verticalLineColor;
+  final Color horizontalLineColor;
+  final Color ballShadowColor;
+
+  const StickTheme({
+    this.ballSize = 25.0,
+    this.stickStart = 10.0,
+    this.lineWidth = 4.0,
+    this.lineHeight = 40.0,
+    this.verticalSpacing = 40.0,
+    required this.ballColor,
+    required this.verticalLineColor,
+    required this.horizontalLineColor,
+    required this.ballShadowColor,
+  });
+
+  // Factory constructors for light and dark themes
+  factory StickTheme.light() {
+    return const StickTheme(
+      ballColor: Colors.blue,
+      verticalLineColor: Colors.black87,
+      horizontalLineColor: Colors.brown,
+      ballShadowColor: Colors.black26,
+    );
+  }
+
+  factory StickTheme.dark() {
+    return const StickTheme(
+      ballColor: Colors.lightBlueAccent,
+      verticalLineColor: Colors.white70,
+      horizontalLineColor: Colors.brown,
+      ballShadowColor: Colors.black87,
+    );
+  }
+
+  // Create a copy with some properties changed
+  StickTheme copyWith({
+    double? ballSize,
+    double? stickStart,
+    double? lineWidth,
+    double? lineHeight,
+    double? verticalSpacing,
+    Color? ballColor,
+    Color? verticalLineColor,
+    Color? horizontalLineColor,
+    Color? ballShadowColor,
+  }) {
+    return StickTheme(
+      ballSize: ballSize ?? this.ballSize,
+      stickStart: stickStart ?? this.stickStart,
+      lineWidth: lineWidth ?? this.lineWidth,
+      lineHeight: lineHeight ?? this.lineHeight,
+      verticalSpacing: verticalSpacing ?? this.verticalSpacing,
+      ballColor: ballColor ?? this.ballColor,
+      verticalLineColor: verticalLineColor ?? this.verticalLineColor,
+      horizontalLineColor: horizontalLineColor ?? this.horizontalLineColor,
+      ballShadowColor: ballShadowColor ?? this.ballShadowColor,
+    );
+  }
+}
+
 class MultipleSticks extends StatefulWidget {
-  const MultipleSticks({super.key});
+  final StickTheme theme;
+  final int numberOfSticks;
+
+  const MultipleSticks({
+    super.key,
+    this.theme = const StickTheme(
+      ballColor: Colors.blue,
+      verticalLineColor: Colors.black87,
+      horizontalLineColor: Colors.brown,
+      ballShadowColor: Colors.black26,
+    ),
+    this.numberOfSticks = 17,
+  });
 
   @override
   _MultipleSticksState createState() => _MultipleSticksState();
 }
 
 class _MultipleSticksState extends State<MultipleSticks> {
-  static const int numberOfSticks = 17;
-  final double ballSize = 25;
-  final double stickStart = 10;
-  final double lineWidth = 4;
-  final double lineHeight = 40;
-  final double verticalSpacing = 40;
-
   late List<List<ValueNotifier<double>>> stickSections;
   late List<double> section1Widths;
   late List<double> section2Widths;
@@ -24,16 +98,20 @@ class _MultipleSticksState extends State<MultipleSticks> {
   @override
   void initState() {
     super.initState();
-    stickSections = List.generate(numberOfSticks, (stickIndex) {
+    _initializeSticks();
+  }
+
+  void _initializeSticks() {
+    stickSections = List.generate(widget.numberOfSticks, (stickIndex) {
       return [
         ...List.generate(4, (index) => ValueNotifier(0.0)),
         ValueNotifier(0.0)
       ];
     });
-    section1Widths = List.filled(numberOfSticks, 0);
-    section2Widths = List.filled(numberOfSticks, 0);
-    maxSection1Positions = List.filled(numberOfSticks, 0);
-    maxSection2Positions = List.filled(numberOfSticks, 0);
+    section1Widths = List.filled(widget.numberOfSticks, 0);
+    section2Widths = List.filled(widget.numberOfSticks, 0);
+    maxSection1Positions = List.filled(widget.numberOfSticks, 0);
+    maxSection2Positions = List.filled(widget.numberOfSticks, 0);
   }
 
   @override
@@ -43,38 +121,31 @@ class _MultipleSticksState extends State<MultipleSticks> {
   }
 
   void _updateDimensions() {
-    // Set fixed widths based on ball size
-    for (int i = 0; i < numberOfSticks; i++) {
-      // Section 1 width = ballSize * 5 (space for 4 balls with gaps)
-      section1Widths[i] = ballSize * 5;
-      // Section 2 width = ballSize * 2 (space for 1 ball with gaps)
-      section2Widths[i] = ballSize * 2;
-
-      // Update maximum positions for balls
-      maxSection1Positions[i] = stickStart + section1Widths[i] - ballSize;
-      maxSection2Positions[i] =
-          stickStart + section1Widths[i] + section2Widths[i] - ballSize;
-
+    for (int i = 0; i < widget.numberOfSticks; i++) {
+      section1Widths[i] = widget.theme.ballSize * 5;
+      section2Widths[i] = widget.theme.ballSize * 2;
+      maxSection1Positions[i] =
+          widget.theme.stickStart + section1Widths[i] - widget.theme.ballSize;
+      maxSection2Positions[i] = widget.theme.stickStart +
+          section1Widths[i] +
+          section2Widths[i] -
+          widget.theme.ballSize;
       _updateInitialBallPositions(i);
     }
   }
 
   void _updateInitialBallPositions(int stickIndex) {
-    // Update section 1 balls (first 4 balls)
-    double spacing1 =
-        ballSize; // Each ball takes up one ball size worth of space
+    double spacing = widget.theme.ballSize;
     for (int i = 0; i < 4; i++) {
-      stickSections[stickIndex][i].value = stickStart + (spacing1 * (i));
+      stickSections[stickIndex][i].value =
+          widget.theme.stickStart + (spacing * i);
     }
-
-    // Update section 2 ball (last ball)
     stickSections[stickIndex][4].value =
-        stickStart + section1Widths[stickIndex] + 0;
+        widget.theme.stickStart + section1Widths[stickIndex];
   }
 
-  // Add reset function
   void _resetAllBalls() {
-    for (int i = 0; i < numberOfSticks; i++) {
+    for (int i = 0; i < widget.numberOfSticks; i++) {
       _updateInitialBallPositions(i);
     }
   }
@@ -91,6 +162,14 @@ class _MultipleSticksState extends State<MultipleSticks> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final currentTheme = brightness == Brightness.dark
+        ? widget.theme.copyWith(
+            ballColor: Colors.lightBlueAccent,
+            verticalLineColor: Colors.white70,
+          )
+        : widget.theme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Multiple Sticks and Balls'),
@@ -105,40 +184,40 @@ class _MultipleSticksState extends State<MultipleSticks> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            children: List.generate(numberOfSticks, (stickIndex) {
+            children: List.generate(widget.numberOfSticks, (stickIndex) {
               return SizedBox(
-                height: verticalSpacing,
+                height: currentTheme.verticalSpacing,
                 child: Stack(
                   children: [
-                    _buildVerticalLine(stickStart - lineWidth, stickIndex),
                     _buildVerticalLine(
-                        stickStart + section1Widths[stickIndex], stickIndex),
+                        currentTheme.stickStart - currentTheme.lineWidth,
+                        stickIndex,
+                        currentTheme),
                     _buildVerticalLine(
-                        stickStart +
-                            section1Widths[stickIndex] +
-                            section2Widths[stickIndex],
-                        stickIndex),
+                        currentTheme.stickStart + section1Widths[stickIndex],
+                        stickIndex,
+                        currentTheme),
+                    _buildVerticalLine(
+                      currentTheme.stickStart +
+                          section1Widths[stickIndex] +
+                          section2Widths[stickIndex],
+                      stickIndex,
+                      currentTheme,
+                    ),
+                    _buildHorizontalLine(currentTheme.stickStart,
+                        section1Widths[stickIndex], stickIndex, currentTheme),
                     _buildHorizontalLine(
-                        stickStart, section1Widths[stickIndex], stickIndex),
-                    _buildHorizontalLine(
-                        stickStart + section1Widths[stickIndex],
-                        section2Widths[stickIndex],
-                        stickIndex),
+                      currentTheme.stickStart + section1Widths[stickIndex],
+                      section2Widths[stickIndex],
+                      stickIndex,
+                      currentTheme,
+                    ),
                     ...List.generate(
                       4,
                       (index) => _buildDraggableBall(
-                        Colors.blue,
-                        stickIndex,
-                        index,
-                        true,
-                      ),
+                          currentTheme, stickIndex, index, true),
                     ).reversed,
-                    _buildDraggableBall(
-                      Colors.blue,
-                      stickIndex,
-                      4,
-                      false,
-                    ),
+                    _buildDraggableBall(currentTheme, stickIndex, 4, false),
                   ],
                 ),
               );
@@ -149,36 +228,33 @@ class _MultipleSticksState extends State<MultipleSticks> {
     );
   }
 
-  Widget _buildVerticalLine(double left, int stickIndex) {
+  Widget _buildVerticalLine(double left, int stickIndex, StickTheme theme) {
     return Positioned(
       left: left,
       top: 0,
       child: Container(
-        width: lineWidth,
-        height: lineHeight,
-        color: Colors.black,
+        width: theme.lineWidth,
+        height: theme.lineHeight,
+        color: theme.verticalLineColor,
       ),
     );
   }
 
-  Widget _buildHorizontalLine(double left, double width, int stickIndex) {
+  Widget _buildHorizontalLine(
+      double left, double width, int stickIndex, StickTheme theme) {
     return Positioned(
       left: left,
       top: 20,
       child: Container(
         width: width,
-        height: 5,
-        color: Colors.brown,
+        height: theme.lineWidth,
+        color: theme.horizontalLineColor,
       ),
     );
   }
 
   Widget _buildDraggableBall(
-    Color color,
-    int stickIndex,
-    int ballIndex,
-    bool isSection1,
-  ) {
+      StickTheme theme, int stickIndex, int ballIndex, bool isSection1) {
     return ValueListenableBuilder<double>(
       valueListenable: stickSections[stickIndex][ballIndex],
       builder: (context, pos, child) {
@@ -187,20 +263,16 @@ class _MultipleSticksState extends State<MultipleSticks> {
           top: 10,
           child: GestureDetector(
             onPanUpdate: (details) => _handleBallMovement(
-              stickIndex,
-              ballIndex,
-              details.delta.dx,
-              isSection1,
-            ),
+                stickIndex, ballIndex, details.delta.dx, isSection1),
             child: Container(
-              width: ballSize,
-              height: ballSize,
+              width: theme.ballSize,
+              height: theme.ballSize,
               decoration: BoxDecoration(
-                color: color,
+                color: theme.ballColor,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: theme.ballShadowColor,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -216,8 +288,9 @@ class _MultipleSticksState extends State<MultipleSticks> {
   void _handleBallMovement(
       int stickIndex, int ballIndex, double delta, bool isSection1) {
     List<ValueNotifier<double>> balls = stickSections[stickIndex];
-    double minPosition =
-        isSection1 ? stickStart : stickStart + section1Widths[stickIndex];
+    double minPosition = isSection1
+        ? widget.theme.stickStart
+        : widget.theme.stickStart + section1Widths[stickIndex];
     double maxPosition = isSection1
         ? maxSection1Positions[stickIndex]
         : maxSection2Positions[stickIndex];
@@ -232,8 +305,8 @@ class _MultipleSticksState extends State<MultipleSticks> {
       for (int i = ballIndex;
           i < (isSection1 ? 4 : positions.length) - 1;
           i++) {
-        if (positions[i + 1] - positions[i] < ballSize) {
-          positions[i + 1] = positions[i] + ballSize;
+        if (positions[i + 1] - positions[i] < widget.theme.ballSize) {
+          positions[i + 1] = positions[i] + widget.theme.ballSize;
 
           if (positions[i + 1] > maxPosition) {
             double excess = positions[i + 1] - maxPosition;
@@ -245,8 +318,8 @@ class _MultipleSticksState extends State<MultipleSticks> {
       }
     } else {
       for (int i = ballIndex; i > (isSection1 ? 0 : 4); i--) {
-        if (positions[i] - positions[i - 1] < ballSize) {
-          positions[i - 1] = positions[i] - ballSize;
+        if (positions[i] - positions[i - 1] < widget.theme.ballSize) {
+          positions[i - 1] = positions[i] - widget.theme.ballSize;
 
           if (positions[i - 1] < minPosition) {
             double excess = minPosition - positions[i - 1];
