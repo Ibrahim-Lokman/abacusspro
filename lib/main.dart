@@ -24,13 +24,12 @@ class MultipleSticks extends StatefulWidget {
 
 class _MultipleSticksState extends State<MultipleSticks> {
   static const int numberOfSticks = 17;
-  final double ballSize = 20;
+  final double ballSize = 25;
   final double stickStart = 10;
   final double lineWidth = 4;
   final double lineHeight = 40;
-  final double verticalSpacing = 40; // Space between sticks
+  final double verticalSpacing = 40;
 
-  // List of sections for each stick
   late List<List<ValueNotifier<double>>> stickSections;
   late List<double> section1Widths;
   late List<double> section2Widths;
@@ -40,7 +39,6 @@ class _MultipleSticksState extends State<MultipleSticks> {
   @override
   void initState() {
     super.initState();
-    // Initialize lists
     stickSections = List.generate(numberOfSticks, (stickIndex) {
       return [
         ...List.generate(4, (index) => ValueNotifier(0.0)),
@@ -60,30 +58,33 @@ class _MultipleSticksState extends State<MultipleSticks> {
   }
 
   void _updateDimensions() {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double totalAvailableWidth = screenWidth - (2 * stickStart);
-
+    // Set fixed widths based on ball size
     for (int i = 0; i < numberOfSticks; i++) {
-      section1Widths[i] = totalAvailableWidth * 0.6;
-      section2Widths[i] = totalAvailableWidth * 0.4;
+      // Section 1 width = ballSize * 5 (space for 4 balls with gaps)
+      section1Widths[i] = ballSize * 5;
+      // Section 2 width = ballSize * 2 (space for 1 ball with gaps)
+      section2Widths[i] = ballSize * 2;
+
+      // Update maximum positions for balls
       maxSection1Positions[i] = stickStart + section1Widths[i] - ballSize;
       maxSection2Positions[i] =
           stickStart + section1Widths[i] + section2Widths[i] - ballSize;
+
       _updateInitialBallPositions(i);
     }
   }
 
   void _updateInitialBallPositions(int stickIndex) {
     // Update section 1 balls (first 4 balls)
-    double spacing1 = section1Widths[stickIndex] / 5;
+    double spacing1 =
+        ballSize; // Each ball takes up one ball size worth of space
     for (int i = 0; i < 4; i++) {
       stickSections[stickIndex][i].value = stickStart + (spacing1 * (i + 1));
     }
 
     // Update section 2 ball (last ball)
-    double spacing2 = section2Widths[stickIndex] / 2;
     stickSections[stickIndex][4].value =
-        stickStart + section1Widths[stickIndex] + spacing2;
+        stickStart + section1Widths[stickIndex] + ballSize;
   }
 
   @override
@@ -102,48 +103,48 @@ class _MultipleSticksState extends State<MultipleSticks> {
       appBar: AppBar(
         title: const Text('Multiple Sticks and Balls'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: List.generate(numberOfSticks, (stickIndex) {
-            return SizedBox(
-              height: verticalSpacing,
-              child: Stack(
-                children: [
-                  // Vertical lines
-                  _buildVerticalLine(stickStart - lineWidth, stickIndex),
-                  _buildVerticalLine(
-                      stickStart + section1Widths[stickIndex], stickIndex),
-                  _buildVerticalLine(
-                      stickStart +
-                          section1Widths[stickIndex] +
-                          section2Widths[stickIndex],
-                      stickIndex),
-                  // Horizontal lines
-                  _buildHorizontalLine(
-                      stickStart, section1Widths[stickIndex], stickIndex),
-                  _buildHorizontalLine(stickStart + section1Widths[stickIndex],
-                      section2Widths[stickIndex], stickIndex),
-                  // Section 1 Balls (4 balls)
-                  ...List.generate(
-                    4,
-                    (index) => _buildDraggableBall(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: List.generate(numberOfSticks, (stickIndex) {
+              return SizedBox(
+                height: verticalSpacing,
+                child: Stack(
+                  children: [
+                    _buildVerticalLine(stickStart - lineWidth, stickIndex),
+                    _buildVerticalLine(
+                        stickStart + section1Widths[stickIndex], stickIndex),
+                    _buildVerticalLine(
+                        stickStart +
+                            section1Widths[stickIndex] +
+                            section2Widths[stickIndex],
+                        stickIndex),
+                    _buildHorizontalLine(
+                        stickStart, section1Widths[stickIndex], stickIndex),
+                    _buildHorizontalLine(
+                        stickStart + section1Widths[stickIndex],
+                        section2Widths[stickIndex],
+                        stickIndex),
+                    ...List.generate(
+                      4,
+                      (index) => _buildDraggableBall(
+                        Colors.blue,
+                        stickIndex,
+                        index,
+                        true,
+                      ),
+                    ).reversed,
+                    _buildDraggableBall(
                       Colors.blue,
                       stickIndex,
-                      index,
-                      true,
+                      4,
+                      false,
                     ),
-                  ).reversed,
-                  // Section 2 Ball (1 ball)
-                  _buildDraggableBall(
-                    Colors.blue,
-                    stickIndex,
-                    4,
-                    false,
-                  ),
-                ],
-              ),
-            );
-          }),
+                  ],
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -167,8 +168,8 @@ class _MultipleSticksState extends State<MultipleSticks> {
       top: 20,
       child: Container(
         width: width,
-        height: 10,
-        color: Colors.black,
+        height: 5,
+        color: Colors.brown,
       ),
     );
   }
@@ -229,7 +230,6 @@ class _MultipleSticksState extends State<MultipleSticks> {
     positions[ballIndex] = newPosition;
 
     if (delta > 0) {
-      // Moving right
       for (int i = ballIndex;
           i < (isSection1 ? 4 : positions.length) - 1;
           i++) {
@@ -245,7 +245,6 @@ class _MultipleSticksState extends State<MultipleSticks> {
         }
       }
     } else {
-      // Moving left
       for (int i = ballIndex; i > (isSection1 ? 0 : 4); i--) {
         if (positions[i] - positions[i - 1] < ballSize) {
           positions[i - 1] = positions[i] - ballSize;
@@ -260,7 +259,6 @@ class _MultipleSticksState extends State<MultipleSticks> {
       }
     }
 
-    // Update all positions
     for (int i = 0; i < positions.length; i++) {
       if (positions[i] != balls[i].value) {
         balls[i].value = positions[i];
