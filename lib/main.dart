@@ -23,30 +23,32 @@ class StickAndBalls extends StatefulWidget {
 }
 
 class _StickAndBallsState extends State<StickAndBalls> {
-  // Initial positions of the balls
-  final List<ValueNotifier<double>> ballPositions = [
-    ValueNotifier(100.0),
-    ValueNotifier(200.0),
-    ValueNotifier(300.0)
-  ];
+  // Two sections of balls: 4 balls and 1 ball
+  final List<ValueNotifier<double>> section1Balls =
+      List.generate(4, (index) => ValueNotifier(100.0 + (index * 50.0)));
+  final List<ValueNotifier<double>> section2Balls = [ValueNotifier(400.0)];
 
   final double ballSize = 30;
   final double stickStart = 40;
-  final double stickPadding = 40;
+  final double section1Width = 250;
+  final double section2Width = 150;
   final double lineWidth = 4;
   final double lineHeight = 40;
-  late final double maxPosition;
+
+  late final double maxSection1Position;
+  late final double maxSection2Position;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    maxPosition =
-        MediaQuery.of(context).size.width - stickPadding - ballSize - lineWidth;
+    // Calculate maximum positions for each section
+    maxSection1Position = stickStart + section1Width - ballSize;
+    maxSection2Position = stickStart + section1Width + section2Width - ballSize;
   }
 
   @override
   void dispose() {
-    for (var notifier in ballPositions) {
+    for (var notifier in [...section1Balls, ...section2Balls]) {
       notifier.dispose();
     }
     super.dispose();
@@ -54,66 +56,84 @@ class _StickAndBallsState extends State<StickAndBalls> {
 
   @override
   Widget build(BuildContext context) {
-    double stickWidth = MediaQuery.of(context).size.width - (2 * stickPadding);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stick and Balls'),
+        title: const Text('Lines and Balls'),
       ),
       body: Stack(
         children: [
-          // Start Line
-          Positioned(
-            left: stickStart - lineWidth,
-            top: 280,
-            child: Container(
-              width: lineWidth,
-              height: lineHeight,
-              color: Colors.black,
-            ),
-          ),
-          // End Line
-          Positioned(
-            left: stickStart + stickWidth,
-            top: 280,
-            child: Container(
-              width: lineWidth,
-              height: lineHeight,
-              color: Colors.black,
-            ),
-          ),
-          // Stick
-          Positioned(
-            left: stickStart,
-            top: 300,
-            child: Container(
-              width: stickWidth,
-              height: 10,
-              color: Colors.black,
-            ),
-          ),
-          // Balls
+          // Line 1
+          _buildVerticalLine(stickStart - lineWidth),
+          // Line 2 (middle)
+          _buildVerticalLine(stickStart + section1Width),
+          // Line 3
+          _buildVerticalLine(stickStart + section1Width + section2Width),
+          // Horizontal lines
+          _buildHorizontalLine(stickStart, section1Width),
+          _buildHorizontalLine(stickStart + section1Width, section2Width),
+          // Section 1 Balls (4 balls)
           ...List.generate(
-              3,
+              4,
               (index) => _buildDraggableBall(
-                    [Colors.red, Colors.green, Colors.blue][index],
+                    Colors.blue,
                     index,
+                    section1Balls[index],
+                    true,
                   )).reversed,
+          // Section 2 Ball (1 ball)
+          _buildDraggableBall(
+            Colors.blue,
+            0,
+            section2Balls[0],
+            false,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDraggableBall(Color color, int index) {
+  Widget _buildVerticalLine(double left) {
+    return Positioned(
+      left: left,
+      top: 280,
+      child: Container(
+        width: lineWidth,
+        height: lineHeight,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  Widget _buildHorizontalLine(double left, double width) {
+    return Positioned(
+      left: left,
+      top: 300,
+      child: Container(
+        width: width,
+        height: 10,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  Widget _buildDraggableBall(
+    Color color,
+    int index,
+    ValueNotifier<double> position,
+    bool isSection1,
+  ) {
     return ValueListenableBuilder<double>(
-      valueListenable: ballPositions[index],
-      builder: (context, position, child) {
+      valueListenable: position,
+      builder: (context, pos, child) {
         return Positioned(
-          left: position,
+          left: pos,
           top: 290,
           child: GestureDetector(
-            onPanUpdate: (details) =>
-                _handleBallMovement(index, details.delta.dx),
+            onPanUpdate: (details) => _handleBallMovement(
+              index,
+              details.delta.dx,
+              isSection1,
+            ),
             child: Container(
               width: ballSize,
               height: ballSize,
@@ -135,23 +155,24 @@ class _StickAndBallsState extends State<StickAndBalls> {
     );
   }
 
-  void _handleBallMovement(int ballIndex, double delta) {
-    double newPosition = ballPositions[ballIndex].value + delta;
+  void _handleBallMovement(int ballIndex, double delta, bool isSection1) {
+    List<ValueNotifier<double>> balls =
+        isSection1 ? section1Balls : section2Balls;
+    double minPosition = isSection1 ? stickStart : stickStart + section1Width;
+    double maxPosition = isSection1 ? maxSection1Position : maxSection2Position;
 
-    // Clamp to bounds
-    newPosition = newPosition.clamp(stickStart, maxPosition);
+    double newPosition = balls[ballIndex].value + delta;
+    newPosition = newPosition.clamp(minPosition, maxPosition);
 
-    List<double> positions = ballPositions.map((n) => n.value).toList();
+    List<double> positions = balls.map((n) => n.value).toList();
     positions[ballIndex] = newPosition;
 
     if (delta > 0) {
-      // Moving right - only check collisions with balls to the right
+      // Moving right
       for (int i = ballIndex; i < positions.length - 1; i++) {
         if (positions[i + 1] - positions[i] < ballSize) {
-          double overlap = ballSize - (positions[i + 1] - positions[i]);
           positions[i + 1] = positions[i] + ballSize;
 
-          // If rightmost ball would exceed bounds, push back only the affected balls
           if (positions[i + 1] > maxPosition) {
             double excess = positions[i + 1] - maxPosition;
             for (int j = i + 1; j >= ballIndex; j--) {
@@ -161,15 +182,13 @@ class _StickAndBallsState extends State<StickAndBalls> {
         }
       }
     } else {
-      // Moving left - only check collisions with balls to the left
+      // Moving left
       for (int i = ballIndex; i > 0; i--) {
         if (positions[i] - positions[i - 1] < ballSize) {
-          double overlap = ballSize - (positions[i] - positions[i - 1]);
           positions[i - 1] = positions[i] - ballSize;
 
-          // If leftmost ball would exceed bounds, push back only the affected balls
-          if (positions[i - 1] < stickStart) {
-            double excess = stickStart - positions[i - 1];
+          if (positions[i - 1] < minPosition) {
+            double excess = minPosition - positions[i - 1];
             for (int j = i - 1; j <= ballIndex; j++) {
               positions[j] += excess;
             }
@@ -180,8 +199,8 @@ class _StickAndBallsState extends State<StickAndBalls> {
 
     // Update all positions
     for (int i = 0; i < positions.length; i++) {
-      if (positions[i] != ballPositions[i].value) {
-        ballPositions[i].value = positions[i];
+      if (positions[i] != balls[i].value) {
+        balls[i].value = positions[i];
       }
     }
   }
