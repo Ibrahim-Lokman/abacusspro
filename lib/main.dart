@@ -25,10 +25,10 @@ class MultipleSticks extends StatefulWidget {
 class _MultipleSticksState extends State<MultipleSticks> {
   static const int numberOfSticks = 17;
   final double ballSize = 20;
-  final double stickStart = 40;
+  final double stickStart = 10;
   final double lineWidth = 4;
   final double lineHeight = 40;
-  final double verticalSpacing = 70; // Space between sticks
+  final double verticalSpacing = 40; // Space between sticks
 
   // List of sections for each stick
   late List<List<ValueNotifier<double>>> stickSections;
