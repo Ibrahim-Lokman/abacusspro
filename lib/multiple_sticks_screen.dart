@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class MultipleSticks extends StatefulWidget {
-  const MultipleSticks({super.key});
+  MultipleSticks({
+    super.key,
+  });
 
   @override
   _MultipleSticksState createState() => _MultipleSticksState();
@@ -9,11 +11,12 @@ class MultipleSticks extends StatefulWidget {
 
 class _MultipleSticksState extends State<MultipleSticks> {
   static const int numberOfSticks = 17;
-  final double ballSize = 25;
-  final double stickStart = 10;
-  final double lineWidth = 4;
-  final double lineHeight = 40;
-  final double verticalSpacing = 40;
+  late double ballSize;
+  late double stickStart;
+  late double lineWidth;
+  late double lineHeight;
+  late double verticalSpacing;
+  late double totalWidth; // Added to track total width
 
   late List<List<ValueNotifier<double>>> stickSections;
   late List<double> section1Widths;
@@ -24,6 +27,10 @@ class _MultipleSticksState extends State<MultipleSticks> {
   @override
   void initState() {
     super.initState();
+    _initializeValues();
+  }
+
+  void _initializeValues() {
     stickSections = List.generate(numberOfSticks, (stickIndex) {
       return [
         ...List.generate(4, (index) => ValueNotifier(0.0)),
@@ -39,40 +46,48 @@ class _MultipleSticksState extends State<MultipleSticks> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _updateResponsiveValues();
     _updateDimensions();
   }
 
-  void _updateDimensions() {
-    // Set fixed widths based on ball size
-    for (int i = 0; i < numberOfSticks; i++) {
-      // Section 1 width = ballSize * 5 (space for 4 balls with gaps)
-      section1Widths[i] = ballSize * 5;
-      // Section 2 width = ballSize * 2 (space for 1 ball with gaps)
-      section2Widths[i] = ballSize * 2;
+  void _updateResponsiveValues() {
+    final screenSize = MediaQuery.of(context).size;
+    final safeAreaPadding = MediaQuery.of(context).padding;
 
-      // Update maximum positions for balls
+    ballSize = screenSize.height * 0.033;
+    lineHeight = screenSize.height * 0.055;
+    verticalSpacing = screenSize.height * 0.055;
+    stickStart = 10;
+    lineWidth = screenSize.width * 0.005 > 8 ? 8 : screenSize.width * 0.005;
+  }
+
+  void _updateDimensions() {
+    for (int i = 0; i < numberOfSticks; i++) {
+      section1Widths[i] = ballSize * 5;
+      section2Widths[i] = ballSize * 2;
       maxSection1Positions[i] = stickStart + section1Widths[i] - ballSize;
       maxSection2Positions[i] =
           stickStart + section1Widths[i] + section2Widths[i] - ballSize;
-
       _updateInitialBallPositions(i);
     }
+
+    // Calculate total width: stickStart + section1Width + section2Width + extra space for the last vertical line
+    totalWidth = stickStart +
+        section1Widths[0] +
+        section2Widths[0] +
+        lineWidth +
+        20; // Added 20 for padding
   }
 
   void _updateInitialBallPositions(int stickIndex) {
-    // Update section 1 balls (first 4 balls)
-    double spacing1 =
-        ballSize; // Each ball takes up one ball size worth of space
+    double spacing1 = ballSize;
     for (int i = 0; i < 4; i++) {
-      stickSections[stickIndex][i].value = stickStart + (spacing1 * (i));
+      stickSections[stickIndex][i].value = stickStart + (spacing1 * i);
     }
-
-    // Update section 2 ball (last ball)
     stickSections[stickIndex][4].value =
-        stickStart + section1Widths[stickIndex] + 0;
+        stickStart + section1Widths[stickIndex];
   }
 
-  // Add reset function
   void _resetAllBalls() {
     for (int i = 0; i < numberOfSticks; i++) {
       _updateInitialBallPositions(i);
@@ -92,58 +107,82 @@ class _MultipleSticksState extends State<MultipleSticks> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Multiple Sticks and Balls'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _resetAllBalls,
-            tooltip: 'Reset All Balls',
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: _resetAllBalls,
+        child: const Icon(Icons.refresh),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: List.generate(numberOfSticks, (stickIndex) {
-              return SizedBox(
-                height: verticalSpacing,
-                child: Stack(
-                  children: [
-                    _buildVerticalLine(stickStart - lineWidth, stickIndex),
-                    _buildVerticalLine(
-                        stickStart + section1Widths[stickIndex], stickIndex),
-                    _buildVerticalLine(
-                        stickStart +
-                            section1Widths[stickIndex] +
-                            section2Widths[stickIndex],
-                        stickIndex),
-                    _buildHorizontalLine(
-                        stickStart, section1Widths[stickIndex], stickIndex),
-                    _buildHorizontalLine(
-                        stickStart + section1Widths[stickIndex],
-                        section2Widths[stickIndex],
-                        stickIndex),
-                    ...List.generate(
-                      4,
-                      (index) => _buildDraggableBall(
-                        Colors.blue,
-                        stickIndex,
-                        index,
-                        true,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: totalWidth, // Using calculated total width
+                    child: Card(
+                      borderOnForeground: true,
+                      elevation: 10,
+                      shape: Border(
+                        top: BorderSide(
+                          color: Colors.black,
+                          width: lineWidth,
+                        ),
+                        bottom: BorderSide(
+                          color: Colors.black,
+                          width: lineWidth,
+                        ),
                       ),
-                    ).reversed,
-                    _buildDraggableBall(
-                      Colors.blue,
-                      stickIndex,
-                      4,
-                      false,
+                      child: Center(
+                        child: Column(
+                          children: List.generate(numberOfSticks, (stickIndex) {
+                            return SizedBox(
+                              height: verticalSpacing,
+                              child: Stack(
+                                children: [
+                                  _buildVerticalLine(
+                                      stickStart - lineWidth, stickIndex),
+                                  _buildVerticalLine(
+                                      stickStart + section1Widths[stickIndex],
+                                      stickIndex),
+                                  _buildVerticalLine(
+                                      stickStart +
+                                          section1Widths[stickIndex] +
+                                          section2Widths[stickIndex],
+                                      stickIndex),
+                                  _buildHorizontalLine(stickStart,
+                                      section1Widths[stickIndex], stickIndex),
+                                  _buildHorizontalLine(
+                                      stickStart + section1Widths[stickIndex],
+                                      section2Widths[stickIndex],
+                                      stickIndex),
+                                  ...List.generate(
+                                    4,
+                                    (index) => _buildDraggableBall(
+                                      Colors.blue,
+                                      stickIndex,
+                                      index,
+                                      true,
+                                    ),
+                                  ).reversed,
+                                  _buildDraggableBall(
+                                    Colors.blue,
+                                    stickIndex,
+                                    4,
+                                    false,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -164,27 +203,23 @@ class _MultipleSticksState extends State<MultipleSticks> {
   Widget _buildHorizontalLine(double left, double width, int stickIndex) {
     return Positioned(
       left: left,
-      top: 20,
+      top: lineHeight * 0.4,
       child: Container(
         width: width,
-        height: 5,
+        height: lineWidth,
         color: Colors.brown,
       ),
     );
   }
 
   Widget _buildDraggableBall(
-    Color color,
-    int stickIndex,
-    int ballIndex,
-    bool isSection1,
-  ) {
+      Color color, int stickIndex, int ballIndex, bool isSection1) {
     return ValueListenableBuilder<double>(
       valueListenable: stickSections[stickIndex][ballIndex],
       builder: (context, pos, child) {
         return Positioned(
           left: pos,
-          top: 10,
+          top: lineHeight * 0.2,
           child: GestureDetector(
             onPanUpdate: (details) => _handleBallMovement(
               stickIndex,
@@ -197,7 +232,7 @@ class _MultipleSticksState extends State<MultipleSticks> {
               height: ballSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Colors.black, Colors.red],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -206,28 +241,15 @@ class _MultipleSticksState extends State<MultipleSticks> {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.3),
                     blurRadius: 6,
-                    offset: const Offset(
-                        2, 2), // Shadow for the "bottom right" to create depth
+                    offset: const Offset(2, 2),
                   ),
                   BoxShadow(
                     color: Colors.white.withOpacity(0.7),
                     blurRadius: 6,
-                    offset: const Offset(-2,
-                        -2), // Highlight for the "top left" to enhance 3D look
+                    offset: const Offset(-2, -2),
                   ),
                 ],
               ),
-              // decoration: BoxDecoration(
-              //   color: color,
-              //   shape: BoxShape.circle,
-              //   boxShadow: [
-              //     BoxShadow(
-              //       color: Colors.black.withOpacity(0.2),
-              //       blurRadius: 4,
-              //       offset: const Offset(0, 2),
-              //     ),
-              //   ],
-              // ),
             ),
           ),
         );
