@@ -10,69 +10,88 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: StickAndBalls(),
+      home: MultipleSticks(),
     );
   }
 }
 
-class StickAndBalls extends StatefulWidget {
-  const StickAndBalls({super.key});
+class MultipleSticks extends StatefulWidget {
+  const MultipleSticks({super.key});
 
   @override
-  _StickAndBallsState createState() => _StickAndBallsState();
+  _MultipleSticksState createState() => _MultipleSticksState();
 }
 
-class _StickAndBallsState extends State<StickAndBalls> {
-  // Two sections of balls: 4 balls and 1 ball
-  final List<ValueNotifier<double>> section1Balls =
-      List.generate(4, (index) => ValueNotifier(100.0 + (index * 50.0)));
-  final List<ValueNotifier<double>> section2Balls = [ValueNotifier(400.0)];
-
-  final double ballSize = 30;
+class _MultipleSticksState extends State<MultipleSticks> {
+  static const int numberOfSticks = 17;
+  final double ballSize = 20;
   final double stickStart = 40;
-  late double section1Width;
-  late double section2Width;
   final double lineWidth = 4;
   final double lineHeight = 40;
+  final double verticalSpacing = 70; // Space between sticks
 
-  late final double maxSection1Position;
-  late final double maxSection2Position;
+  // List of sections for each stick
+  late List<List<ValueNotifier<double>>> stickSections;
+  late List<double> section1Widths;
+  late List<double> section2Widths;
+  late List<double> maxSection1Positions;
+  late List<double> maxSection2Positions;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize lists
+    stickSections = List.generate(numberOfSticks, (stickIndex) {
+      return [
+        ...List.generate(4, (index) => ValueNotifier(0.0)),
+        ValueNotifier(0.0)
+      ];
+    });
+    section1Widths = List.filled(numberOfSticks, 0);
+    section2Widths = List.filled(numberOfSticks, 0);
+    maxSection1Positions = List.filled(numberOfSticks, 0);
+    maxSection2Positions = List.filled(numberOfSticks, 0);
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Calculate section widths based on screen size
+    _updateDimensions();
+  }
+
+  void _updateDimensions() {
     double screenWidth = MediaQuery.of(context).size.width;
     double totalAvailableWidth = screenWidth - (2 * stickStart);
 
-    // Distribute available width between sections (60% for section1, 40% for section2)
-    section1Width = totalAvailableWidth * 0.6;
-    section2Width = totalAvailableWidth * 0.4;
-
-    // Calculate maximum positions for each section
-    maxSection1Position = stickStart + section1Width - ballSize;
-    maxSection2Position = stickStart + section1Width + section2Width - ballSize;
-
-    // Update initial ball positions if needed
-    _updateInitialBallPositions();
+    for (int i = 0; i < numberOfSticks; i++) {
+      section1Widths[i] = totalAvailableWidth * 0.6;
+      section2Widths[i] = totalAvailableWidth * 0.4;
+      maxSection1Positions[i] = stickStart + section1Widths[i] - ballSize;
+      maxSection2Positions[i] =
+          stickStart + section1Widths[i] + section2Widths[i] - ballSize;
+      _updateInitialBallPositions(i);
+    }
   }
 
-  void _updateInitialBallPositions() {
-    // Update section 1 balls
-    double spacing1 = section1Width / (section1Balls.length + 1);
-    for (int i = 0; i < section1Balls.length; i++) {
-      section1Balls[i].value = stickStart + (spacing1 * (i + 1));
+  void _updateInitialBallPositions(int stickIndex) {
+    // Update section 1 balls (first 4 balls)
+    double spacing1 = section1Widths[stickIndex] / 5;
+    for (int i = 0; i < 4; i++) {
+      stickSections[stickIndex][i].value = stickStart + (spacing1 * (i + 1));
     }
 
-    // Update section 2 ball
-    double spacing2 = section2Width / 2;
-    section2Balls[0].value = stickStart + section1Width + spacing2;
+    // Update section 2 ball (last ball)
+    double spacing2 = section2Widths[stickIndex] / 2;
+    stickSections[stickIndex][4].value =
+        stickStart + section1Widths[stickIndex] + spacing2;
   }
 
   @override
   void dispose() {
-    for (var notifier in [...section1Balls, ...section2Balls]) {
-      notifier.dispose();
+    for (var stick in stickSections) {
+      for (var notifier in stick) {
+        notifier.dispose();
+      }
     }
     super.dispose();
   }
@@ -81,44 +100,59 @@ class _StickAndBallsState extends State<StickAndBalls> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lines and Balls'),
+        title: const Text('Multiple Sticks and Balls'),
       ),
-      body: Stack(
-        children: [
-          // Line 1
-          _buildVerticalLine(stickStart - lineWidth),
-          // Line 2 (middle)
-          _buildVerticalLine(stickStart + section1Width),
-          // Line 3
-          _buildVerticalLine(stickStart + section1Width + section2Width),
-          // Horizontal lines
-          _buildHorizontalLine(stickStart, section1Width),
-          _buildHorizontalLine(stickStart + section1Width, section2Width),
-          // Section 1 Balls (4 balls)
-          ...List.generate(
-              4,
-              (index) => _buildDraggableBall(
+      body: SingleChildScrollView(
+        child: Column(
+          children: List.generate(numberOfSticks, (stickIndex) {
+            return SizedBox(
+              height: verticalSpacing,
+              child: Stack(
+                children: [
+                  // Vertical lines
+                  _buildVerticalLine(stickStart - lineWidth, stickIndex),
+                  _buildVerticalLine(
+                      stickStart + section1Widths[stickIndex], stickIndex),
+                  _buildVerticalLine(
+                      stickStart +
+                          section1Widths[stickIndex] +
+                          section2Widths[stickIndex],
+                      stickIndex),
+                  // Horizontal lines
+                  _buildHorizontalLine(
+                      stickStart, section1Widths[stickIndex], stickIndex),
+                  _buildHorizontalLine(stickStart + section1Widths[stickIndex],
+                      section2Widths[stickIndex], stickIndex),
+                  // Section 1 Balls (4 balls)
+                  ...List.generate(
+                    4,
+                    (index) => _buildDraggableBall(
+                      Colors.blue,
+                      stickIndex,
+                      index,
+                      true,
+                    ),
+                  ).reversed,
+                  // Section 2 Ball (1 ball)
+                  _buildDraggableBall(
                     Colors.blue,
-                    index,
-                    section1Balls[index],
-                    true,
-                  )).reversed,
-          // Section 2 Ball (1 ball)
-          _buildDraggableBall(
-            Colors.blue,
-            0,
-            section2Balls[0],
-            false,
-          ),
-        ],
+                    stickIndex,
+                    4,
+                    false,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
 
-  Widget _buildVerticalLine(double left) {
+  Widget _buildVerticalLine(double left, int stickIndex) {
     return Positioned(
       left: left,
-      top: 280,
+      top: 0,
       child: Container(
         width: lineWidth,
         height: lineHeight,
@@ -127,10 +161,10 @@ class _StickAndBallsState extends State<StickAndBalls> {
     );
   }
 
-  Widget _buildHorizontalLine(double left, double width) {
+  Widget _buildHorizontalLine(double left, double width, int stickIndex) {
     return Positioned(
       left: left,
-      top: 300,
+      top: 20,
       child: Container(
         width: width,
         height: 10,
@@ -141,19 +175,20 @@ class _StickAndBallsState extends State<StickAndBalls> {
 
   Widget _buildDraggableBall(
     Color color,
-    int index,
-    ValueNotifier<double> position,
+    int stickIndex,
+    int ballIndex,
     bool isSection1,
   ) {
     return ValueListenableBuilder<double>(
-      valueListenable: position,
+      valueListenable: stickSections[stickIndex][ballIndex],
       builder: (context, pos, child) {
         return Positioned(
           left: pos,
-          top: 290,
+          top: 10,
           child: GestureDetector(
             onPanUpdate: (details) => _handleBallMovement(
-              index,
+              stickIndex,
+              ballIndex,
               details.delta.dx,
               isSection1,
             ),
@@ -178,11 +213,14 @@ class _StickAndBallsState extends State<StickAndBalls> {
     );
   }
 
-  void _handleBallMovement(int ballIndex, double delta, bool isSection1) {
-    List<ValueNotifier<double>> balls =
-        isSection1 ? section1Balls : section2Balls;
-    double minPosition = isSection1 ? stickStart : stickStart + section1Width;
-    double maxPosition = isSection1 ? maxSection1Position : maxSection2Position;
+  void _handleBallMovement(
+      int stickIndex, int ballIndex, double delta, bool isSection1) {
+    List<ValueNotifier<double>> balls = stickSections[stickIndex];
+    double minPosition =
+        isSection1 ? stickStart : stickStart + section1Widths[stickIndex];
+    double maxPosition = isSection1
+        ? maxSection1Positions[stickIndex]
+        : maxSection2Positions[stickIndex];
 
     double newPosition = balls[ballIndex].value + delta;
     newPosition = newPosition.clamp(minPosition, maxPosition);
@@ -192,7 +230,9 @@ class _StickAndBallsState extends State<StickAndBalls> {
 
     if (delta > 0) {
       // Moving right
-      for (int i = ballIndex; i < positions.length - 1; i++) {
+      for (int i = ballIndex;
+          i < (isSection1 ? 4 : positions.length) - 1;
+          i++) {
         if (positions[i + 1] - positions[i] < ballSize) {
           positions[i + 1] = positions[i] + ballSize;
 
@@ -206,7 +246,7 @@ class _StickAndBallsState extends State<StickAndBalls> {
       }
     } else {
       // Moving left
-      for (int i = ballIndex; i > 0; i--) {
+      for (int i = ballIndex; i > (isSection1 ? 0 : 4); i--) {
         if (positions[i] - positions[i - 1] < ballSize) {
           positions[i - 1] = positions[i] - ballSize;
 
