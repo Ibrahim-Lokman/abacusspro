@@ -213,12 +213,12 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                       !isDarkMode
                                           ? Colors.black
                                           : Color(
-                                              0XFF624CAB,
+                                              0XFFD4AF37,
                                             ),
                                       !isDarkMode
                                           ? const Color(0XFFbd081c)
                                           : Color(
-                                              0XFF624CAB,
+                                              0XFFD4AF37,
                                             ),
                                       !isDarkMode ? Colors.black : Colors.white,
                                       stickIndex,
