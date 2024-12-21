@@ -72,7 +72,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
     final screenSize = MediaQuery.of(context).size;
     final safeAreaPadding = MediaQuery.of(context).padding;
 
-    ballSize = screenSize.width * 0.033;
+    ballSize = screenSize.width * 0.027;
     lineHeight = screenSize.width * 0.055;
     horizontalSpacing = screenSize.width * 0.055;
     stickStart = 10;
@@ -122,14 +122,15 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
             onPressed: _toggleTheme,
             child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(width: 16),
           FloatingActionButton(
             onPressed: _resetAllBalls,
             child: const Column(
@@ -196,10 +197,10 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                       4,
                                       (index) => _buildDraggableBall(
                                         !isDarkMode
-                                            ? Colors.black
+                                            ? Colors.black87
                                             : Color(0XFF800020),
                                         !isDarkMode
-                                            ? const Color(0XFF1da1f2)
+                                            ? Colors.black
                                             : Color(0XFFAD343E),
                                         !isDarkMode
                                             ? Colors.black
@@ -211,15 +212,12 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                     ).reversed,
                                     _buildDraggableBall(
                                       !isDarkMode
-                                          ? Colors.black
-                                          : Color(
-                                              0XFFD4AF37,
-                                            ),
+                                          ? const Color.fromARGB(
+                                              255, 0, 100, 12)
+                                          : Color.fromARGB(255, 228, 184, 42),
                                       !isDarkMode
-                                          ? const Color(0XFFbd081c)
-                                          : Color(
-                                              0XFFD4AF37,
-                                            ),
+                                          ? const Color.fromARGB(255, 0, 60, 7)
+                                          : Color.fromARGB(255, 206, 196, 2),
                                       !isDarkMode ? Colors.black : Colors.white,
                                       stickIndex,
                                       4,
@@ -291,7 +289,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                   center: const Alignment(-0.3, -0.5),
                   radius: 0.9,
                   colors: [
-                    Colors.white.withOpacity(0.8),
+                    color.withOpacity(0.6),
                     color.withOpacity(0.9),
                     color.withOpacity(1.0),
                     shades1,
