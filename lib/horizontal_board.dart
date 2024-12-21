@@ -81,7 +81,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
       stickSections[stickIndex][i].value = stickStart + (spacing1 * i);
     }
     stickSections[stickIndex][4].value =
-        stickStart + section1Heights[stickIndex];
+        stickStart + section1Heights[stickIndex] + ballSize;
   }
 
   void _resetAllBalls() {
@@ -106,7 +106,9 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
       backgroundColor: Colors.black,
       floatingActionButton: FloatingActionButton(
         onPressed: _resetAllBalls,
-        child: const Icon(Icons.refresh),
+        child: Column(
+          children: [const Icon(Icons.refresh), Text("RESET")],
+        ),
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -116,7 +118,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                   Axis.horizontal, // Changed to horizontal scrolling
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: SizedBox(
                     height: totalHeight,
                     child: Card(
@@ -167,9 +169,9 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                     ...List.generate(
                                       4,
                                       (index) => _buildDraggableBall(
+                                        Color(0XFF1877f2),
                                         Color(0XFF1da1f2),
                                         Color(0XFF0088cc),
-                                        Color(0XFF1877f2),
                                         stickIndex,
                                         index,
                                         true,
@@ -245,23 +247,56 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
               height: ballSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [shades1, shades2, color, Colors.white],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                gradient: RadialGradient(
+                  center: Alignment(-0.3, -0.5),
+                  radius: 0.9,
+                  colors: [
+                    Colors.white.withOpacity(0.8), // Bright highlight
+                    color.withOpacity(0.9), // Main color
+                    color.withOpacity(1.0), // Deeper main color
+                    shades1, // Darker shade
+                    shades2.withOpacity(0.9), // Darkest shade
+                  ],
+                  stops: const [0.0, 0.3, 0.6, 0.8, 1.0],
                 ),
                 boxShadow: [
+                  // Outer shadow
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: const Offset(2, 2),
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: const Offset(2, 4),
                   ),
+                  // Inner shadow for depth
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.black.withOpacity(0.2),
                     blurRadius: 6,
-                    offset: const Offset(-2, -2),
+                    spreadRadius: -2,
+                    offset: const Offset(0, 2),
+                  ),
+                  // Highlight reflection
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.8),
+                    blurRadius: 10,
+                    spreadRadius: -5,
+                    offset: const Offset(-3, -3),
                   ),
                 ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment(-0.5, -0.5),
+                    end: Alignment(0.8, 0.8),
+                    colors: [
+                      Colors.white.withOpacity(0.0),
+                      Colors.white.withOpacity(0.2),
+                      Colors.white.withOpacity(0.0),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
               ),
             ),
           ),
