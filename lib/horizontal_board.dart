@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HorMultipleSticks extends StatefulWidget {
-  HorMultipleSticks({
+  const HorMultipleSticks({
     super.key,
   });
 
@@ -11,23 +11,41 @@ class HorMultipleSticks extends StatefulWidget {
 
 class _HorMultipleSticksState extends State<HorMultipleSticks> {
   static const int numberOfSticks = 17;
+  bool isDarkMode = true; // Add theme state
   late double ballSize;
   late double stickStart;
   late double lineWidth;
   late double lineHeight;
   late double horizontalSpacing;
-  late double totalHeight; // Changed from totalWidth to totalHeight
+  late double totalHeight;
 
   late List<List<ValueNotifier<double>>> stickSections;
-  late List<double> section1Heights; // Changed from widths to heights
+  late List<double> section1Heights;
   late List<double> section2Heights;
   late List<double> maxSection1Positions;
   late List<double> maxSection2Positions;
+
+  // Theme colors
+  late Color backgroundColor;
+  late Color stickColor;
 
   @override
   void initState() {
     super.initState();
     _initializeValues();
+    _updateThemeColors();
+  }
+
+  void _updateThemeColors() {
+    backgroundColor = isDarkMode ? Colors.black : Colors.white;
+    stickColor = isDarkMode ? Colors.brown : Colors.brown.shade300;
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+      _updateThemeColors();
+    });
   }
 
   void _initializeValues() {
@@ -103,35 +121,44 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _resetAllBalls,
-        child: Column(
-          children: [const Icon(Icons.refresh), Text("RESET")],
-        ),
+      backgroundColor: backgroundColor,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _toggleTheme,
+            child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: _resetAllBalls,
+            child: const Column(
+              children: [Icon(Icons.refresh), Text("RESET")],
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              scrollDirection:
-                  Axis.horizontal, // Changed to horizontal scrolling
+              scrollDirection: Axis.horizontal,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: SizedBox(
                     height: totalHeight,
                     child: Card(
-                      color: Colors.black,
+                      color: backgroundColor,
                       borderOnForeground: true,
-                      elevation: 10,
+                      elevation: 0,
                       shape: Border(
                         left: BorderSide(
-                          color: Colors.brown,
+                          color: stickColor,
                           width: lineWidth,
                         ),
                         right: BorderSide(
-                          color: Colors.brown,
+                          color: stickColor,
                           width: lineWidth,
                         ),
                       ),
@@ -139,7 +166,6 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                         child: RotatedBox(
                           quarterTurns: 2,
                           child: Row(
-                            // Changed from Column to Row
                             children:
                                 List.generate(numberOfSticks, (stickIndex) {
                               return SizedBox(
@@ -169,18 +195,32 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                     ...List.generate(
                                       4,
                                       (index) => _buildDraggableBall(
-                                        Color(0XFF1877f2),
-                                        Color(0XFF1da1f2),
-                                        Color(0XFF0088cc),
+                                        !isDarkMode
+                                            ? Colors.black
+                                            : Color(0XFF800020),
+                                        !isDarkMode
+                                            ? const Color(0XFF1da1f2)
+                                            : Color(0XFFAD343E),
+                                        !isDarkMode
+                                            ? Colors.black
+                                            : Colors.white,
                                         stickIndex,
                                         index,
                                         true,
                                       ),
                                     ).reversed,
                                     _buildDraggableBall(
-                                      Color(0XFFff0000),
-                                      Color(0XFFbd081c),
-                                      Color(0XFFc32aa3),
+                                      !isDarkMode
+                                          ? Colors.black
+                                          : Color(
+                                              0XFF624CAB,
+                                            ),
+                                      !isDarkMode
+                                          ? const Color(0XFFbd081c)
+                                          : Color(
+                                              0XFF624CAB,
+                                            ),
+                                      !isDarkMode ? Colors.black : Colors.white,
                                       stickIndex,
                                       4,
                                       false,
@@ -210,7 +250,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
       child: Container(
         height: lineWidth,
         width: lineHeight,
-        color: Colors.brown,
+        color: stickColor,
       ),
     );
   }
@@ -222,7 +262,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
       child: Container(
         height: height,
         width: lineWidth,
-        color: Colors.brown,
+        color: stickColor,
       ),
     );
   }
@@ -239,7 +279,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
             onPanUpdate: (details) => _handleBallMovement(
               stickIndex,
               ballIndex,
-              details.delta.dy, // Changed from dx to dy
+              details.delta.dy,
               isSection1,
             ),
             child: Container(
@@ -248,33 +288,30 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  center: Alignment(-0.3, -0.5),
+                  center: const Alignment(-0.3, -0.5),
                   radius: 0.9,
                   colors: [
-                    Colors.white.withOpacity(0.8), // Bright highlight
-                    color.withOpacity(0.9), // Main color
-                    color.withOpacity(1.0), // Deeper main color
-                    shades1, // Darker shade
-                    shades2.withOpacity(0.9), // Darkest shade
+                    Colors.white.withOpacity(0.8),
+                    color.withOpacity(0.9),
+                    color.withOpacity(1.0),
+                    shades1,
+                    shades2.withOpacity(0.9),
                   ],
                   stops: const [0.0, 0.3, 0.6, 0.8, 1.0],
                 ),
                 boxShadow: [
-                  // Outer shadow
                   BoxShadow(
                     color: Colors.black.withOpacity(0.4),
                     blurRadius: 8,
                     spreadRadius: 1,
                     offset: const Offset(2, 4),
                   ),
-                  // Inner shadow for depth
                   BoxShadow(
                     color: Colors.black.withOpacity(0.2),
                     blurRadius: 6,
                     spreadRadius: -2,
                     offset: const Offset(0, 2),
                   ),
-                  // Highlight reflection
                   BoxShadow(
                     color: Colors.white.withOpacity(0.8),
                     blurRadius: 10,
@@ -287,8 +324,8 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    begin: Alignment(-0.5, -0.5),
-                    end: Alignment(0.8, 0.8),
+                    begin: const Alignment(-0.5, -0.5),
+                    end: const Alignment(0.8, 0.8),
                     colors: [
                       Colors.white.withOpacity(0.0),
                       Colors.white.withOpacity(0.2),
