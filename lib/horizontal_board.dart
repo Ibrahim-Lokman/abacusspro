@@ -10,8 +10,8 @@ class HorMultipleSticks extends StatefulWidget {
 }
 
 class _HorMultipleSticksState extends State<HorMultipleSticks> {
-  static const int numberOfSticks = 17;
-  bool isDarkMode = true; // Add theme state
+  int numberOfSticks = 17; // Changed from static to instance variable
+  bool isDarkMode = true;
   late double ballSize;
   late double stickStart;
   late double lineWidth;
@@ -24,6 +24,9 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   late List<double> section2Heights;
   late List<double> maxSection1Positions;
   late List<double> maxSection2Positions;
+
+  // Available stick count options
+  final List<int> stickOptions = [5, 7, 9, 11, 13, 15, 17];
 
   // Theme colors
   late Color backgroundColor;
@@ -46,6 +49,16 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
       isDarkMode = !isDarkMode;
       _updateThemeColors();
     });
+  }
+
+  void _updateStickCount(int? newCount) {
+    if (newCount != null) {
+      setState(() {
+        numberOfSticks = newCount;
+        _initializeValues();
+        _updateDimensions();
+      });
+    }
   }
 
   void _initializeValues() {
@@ -121,137 +134,249 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            onPressed: _toggleTheme,
-            child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-          ),
-          const SizedBox(width: 16),
-          FloatingActionButton(
-            onPressed: _resetAllBalls,
-            child: const Column(
-              children: [Icon(Icons.refresh), Text("RESET")],
+        backgroundColor: backgroundColor,
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return StatefulBuilder(
+                      builder: (context, setState) {
+                        return AlertDialog(
+                          title: Text('Settings'),
+                          alignment: Alignment.center,
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Close'),
+                            ),
+                          ],
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Number of Rods: '),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    child: DropdownButton<int>(
+                                      isDense: true,
+                                      padding: EdgeInsets.all(4),
+                                      value: numberOfSticks,
+                                      // dropdownColor: Colors.grey[800],
+                                      style: TextStyle(
+                                        // Use the appropriate text color based on theme
+                                        color: Colors.black,
+                                      ),
+                                      items: stickOptions.map((int value) {
+                                        return DropdownMenuItem<int>(
+                                          value: value,
+                                          child: Text(
+                                            '$value',
+                                            style: TextStyle(
+                                              // Match the dropdown item text color with the button text color
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (int? newValue) {
+                                        if (newValue != null) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            duration: Durations.long4,
+                                            dismissDirection:
+                                                DismissDirection.horizontal,
+                                            showCloseIcon: true,
+                                            content: Text(
+                                                '$numberOfSticks rods selected'),
+                                          ));
+
+                                          // Make sure to call setState to update the UI
+                                          setState(() {
+                                            numberOfSticks = newValue;
+                                          });
+                                          // If _updateStickCount does additional work, call it here
+                                          _updateStickCount(newValue);
+                                          Navigator.of(context).pop();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Row(
+                              //   mainAxisAlignment:
+                              //       MainAxisAlignment.spaceBetween,
+                              //   children: [
+                              //     Text('Theme: '),
+                              //     FloatingActionButton(
+                              //       onPressed: _toggleTheme,
+                              //       child: Icon(isDarkMode
+                              //           ? Icons.light_mode
+                              //           : Icons.dark_mode),
+                              //     ),
+                              //   ],
+                              // ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+              child: Icon(Icons.settings),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: SizedBox(
-                    height: totalHeight,
-                    child: Card(
-                      color: backgroundColor,
-                      borderOnForeground: true,
-                      elevation: 0,
-                      shape: Border(
-                        left: BorderSide(
-                          color: stickColor,
-                          width: lineWidth,
+            const SizedBox(width: 16),
+            FloatingActionButton(
+              onPressed: _toggleTheme,
+              child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            ),
+            const SizedBox(width: 16),
+            FloatingActionButton(
+              onPressed: _resetAllBalls,
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [Icon(Icons.refresh), Text("RESET")],
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: LayoutBuilder(builder: (context, constraints) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: SizedBox(
+                      height: totalHeight,
+                      child: Card(
+                        color: backgroundColor,
+                        borderOnForeground: true,
+                        elevation: 0,
+                        shape: Border(
+                          left: BorderSide(
+                            color: stickColor,
+                            width: lineWidth,
+                          ),
+                          right: BorderSide(
+                            color: stickColor,
+                            width: lineWidth,
+                          ),
                         ),
-                        right: BorderSide(
-                          color: stickColor,
-                          width: lineWidth,
-                        ),
-                      ),
-                      child: Center(
-                        child: RotatedBox(
-                          quarterTurns: 2,
-                          child: Row(
-                            children:
-                                List.generate(numberOfSticks, (stickIndex) {
-                              return SizedBox(
-                                width: horizontalSpacing,
-                                child: Stack(
-                                  children: [
-                                    _buildHorizontalLine(
-                                        stickStart - lineWidth, stickIndex),
-                                    _buildHorizontalLine(
-                                        stickStart +
-                                            section1Heights[stickIndex],
-                                        stickIndex),
-                                    _buildHorizontalLine(
-                                        stickStart +
-                                            section1Heights[stickIndex] +
-                                            section2Heights[stickIndex],
-                                        stickIndex),
-                                    _buildVerticalLine(
-                                        stickStart,
-                                        section1Heights[stickIndex],
-                                        stickIndex),
-                                    _buildVerticalLine(
-                                        stickStart +
-                                            section1Heights[stickIndex],
-                                        section2Heights[stickIndex],
-                                        stickIndex),
-                                    ...List.generate(
-                                      4,
-                                      (index) => _buildDraggableBall(
-                                        // Change color for 4th bead (index 3) of 9th stick (stickIndex 8)
-                                        (stickIndex == 8 && index == 3)
-                                            ? !isDarkMode
-                                                ? const Color.fromARGB(
-                                                    255, 0, 100, 12)
-                                                : Color.fromARGB(
-                                                    255, 228, 184, 42)
-                                            : (!isDarkMode
-                                                ? Colors.black87
-                                                : Color(0XFF800020)),
-                                        (stickIndex == 8 && index == 3)
-                                            ? !isDarkMode
-                                                ? const Color.fromARGB(
-                                                    255, 0, 60, 7)
-                                                : Color.fromARGB(
-                                                    255, 206, 196, 2)
-                                            : (!isDarkMode
-                                                ? Colors.black
-                                                : Color(0XFFAD343E)),
+                        child: Center(
+                          child: RotatedBox(
+                            quarterTurns: 2,
+                            child: Row(
+                              children:
+                                  List.generate(numberOfSticks, (stickIndex) {
+                                return SizedBox(
+                                  width: horizontalSpacing,
+                                  child: Stack(
+                                    children: [
+                                      _buildHorizontalLine(
+                                          stickStart - lineWidth, stickIndex),
+                                      _buildHorizontalLine(
+                                          stickStart +
+                                              section1Heights[stickIndex],
+                                          stickIndex),
+                                      _buildHorizontalLine(
+                                          stickStart +
+                                              section1Heights[stickIndex] +
+                                              section2Heights[stickIndex],
+                                          stickIndex),
+                                      _buildVerticalLine(
+                                          stickStart,
+                                          section1Heights[stickIndex],
+                                          stickIndex),
+                                      _buildVerticalLine(
+                                          stickStart +
+                                              section1Heights[stickIndex],
+                                          section2Heights[stickIndex],
+                                          stickIndex),
+                                      ...List.generate(
+                                        4,
+                                        (index) => _buildDraggableBall(
+                                          // Change color for 4th bead (index 3) of 9th stick (stickIndex 8)
+                                          (numberOfSticks >= 9 &&
+                                                  stickIndex ==
+                                                      numberOfSticks - 9 &&
+                                                  index == 3)
+                                              ? !isDarkMode
+                                                  ? const Color.fromARGB(
+                                                      255, 0, 100, 12)
+                                                  : Color.fromARGB(
+                                                      255, 228, 184, 42)
+                                              : (!isDarkMode
+                                                  ? Colors.black87
+                                                  : Color(0XFF800020)),
+                                          (numberOfSticks >= 9 &&
+                                                  stickIndex ==
+                                                      numberOfSticks - 9 &&
+                                                  index == 3)
+                                              ? !isDarkMode
+                                                  ? const Color.fromARGB(
+                                                      255, 0, 60, 7)
+                                                  : Color.fromARGB(
+                                                      255, 206, 196, 2)
+                                              : (!isDarkMode
+                                                  ? Colors.black
+                                                  : Color(0XFFAD343E)),
+                                          !isDarkMode
+                                              ? Colors.black
+                                              : Colors.white,
+                                          stickIndex,
+                                          index,
+                                          true,
+                                        ),
+                                      ).reversed,
+                                      _buildDraggableBall(
+                                        !isDarkMode
+                                            ? const Color.fromARGB(
+                                                255, 0, 100, 12)
+                                            : Color.fromARGB(255, 228, 184, 42),
+                                        !isDarkMode
+                                            ? const Color.fromARGB(
+                                                255, 0, 60, 7)
+                                            : Color.fromARGB(255, 206, 196, 2),
                                         !isDarkMode
                                             ? Colors.black
                                             : Colors.white,
                                         stickIndex,
-                                        index,
-                                        true,
+                                        4,
+                                        false,
                                       ),
-                                    ).reversed,
-                                    _buildDraggableBall(
-                                      !isDarkMode
-                                          ? const Color.fromARGB(
-                                              255, 0, 100, 12)
-                                          : Color.fromARGB(255, 228, 184, 42),
-                                      !isDarkMode
-                                          ? const Color.fromARGB(255, 0, 60, 7)
-                                          : Color.fromARGB(255, 206, 196, 2),
-                                      !isDarkMode ? Colors.black : Colors.white,
-                                      stickIndex,
-                                      4,
-                                      false,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
+              );
+            }),
+          ),
+        ));
   }
 
   Widget _buildHorizontalLine(double top, int stickIndex) {
