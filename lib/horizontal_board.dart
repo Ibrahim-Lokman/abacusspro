@@ -196,12 +196,25 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                     ...List.generate(
                                       4,
                                       (index) => _buildDraggableBall(
-                                        !isDarkMode
-                                            ? Colors.black87
-                                            : Color(0XFF800020),
-                                        !isDarkMode
-                                            ? Colors.black
-                                            : Color(0XFFAD343E),
+                                        // Change color for 4th bead (index 3) of 9th stick (stickIndex 8)
+                                        (stickIndex == 8 && index == 3)
+                                            ? !isDarkMode
+                                                ? const Color.fromARGB(
+                                                    255, 0, 100, 12)
+                                                : Color.fromARGB(
+                                                    255, 228, 184, 42)
+                                            : (!isDarkMode
+                                                ? Colors.black87
+                                                : Color(0XFF800020)),
+                                        (stickIndex == 8 && index == 3)
+                                            ? !isDarkMode
+                                                ? const Color.fromARGB(
+                                                    255, 0, 60, 7)
+                                                : Color.fromARGB(
+                                                    255, 206, 196, 2)
+                                            : (!isDarkMode
+                                                ? Colors.black
+                                                : Color(0XFFAD343E)),
                                         !isDarkMode
                                             ? Colors.black
                                             : Colors.white,
