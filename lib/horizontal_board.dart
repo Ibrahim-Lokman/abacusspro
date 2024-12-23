@@ -86,11 +86,11 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
     final screenSize = MediaQuery.of(context).size;
     final safeAreaPadding = MediaQuery.of(context).padding;
 
-    ballSize = screenSize.width * 0.027;
+    ballSize = screenSize.width * 0.042;
     lineHeight = screenSize.width * 0.055;
     horizontalSpacing = screenSize.width * 0.055;
     stickStart = 10;
-    lineWidth = screenSize.width * 0.005 > 8 ? 8 : screenSize.height * 0.005;
+    lineWidth = screenSize.width * 0.0055 > 8 ? 8 : screenSize.width * 0.0055;
   }
 
   void _updateDimensions() {
@@ -135,134 +135,139 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: backgroundColor,
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          width: MediaQuery.of(context).size.width * 1,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              FloatingActionButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return StatefulBuilder(
-                        builder: (context, setState) {
-                          return AlertDialog(
-                            title: Text('Settings'),
-                            alignment: Alignment.center,
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('Close'),
-                              ),
-                            ],
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Number of Rods: '),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8),
-                                      child: DropdownButton<int>(
-                                        isDense: true,
-                                        padding: EdgeInsets.all(4),
-                                        value: numberOfSticks,
-                                        // dropdownColor: Colors.grey[800],
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          centerTitle: true,
+          title: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            color: Colors.white,
+            child: Image.asset(
+              'assets/abacusmbaa.png',
+              width: 250,
+              height: 50,
+              // fit: BoxFit.fitWidth,
+            ),
+          ),
+          actions: [
+            Card(
+              color: isDarkMode ? Colors.white : Colors.black,
+              child: PopupMenuButton(
+                icon: Icon(
+                  Icons.more_vert,
+                  color: isDarkMode ? Colors.black : Colors.white,
+                ),
+                itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem(
+                      value: 'Rods',
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Number of Rods: '),
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: DropdownButton<int>(
+                                  isDense: true,
+                                  padding: EdgeInsets.all(4),
+                                  value: numberOfSticks,
+                                  // dropdownColor: Colors.grey[800],
+                                  style: TextStyle(
+                                    // Use the appropriate text color based on theme
+                                    color: Colors.black,
+                                  ),
+                                  items: stickOptions.map((int value) {
+                                    return DropdownMenuItem<int>(
+                                      value: value,
+                                      child: Text(
+                                        '$value',
                                         style: TextStyle(
-                                          // Use the appropriate text color based on theme
+                                          // Match the dropdown item text color with the button text color
                                           color: Colors.black,
                                         ),
-                                        items: stickOptions.map((int value) {
-                                          return DropdownMenuItem<int>(
-                                            value: value,
-                                            child: Text(
-                                              '$value',
-                                              style: TextStyle(
-                                                // Match the dropdown item text color with the button text color
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (int? newValue) {
-                                          if (newValue != null) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(
-                                              duration: Durations.long4,
-                                              dismissDirection:
-                                                  DismissDirection.horizontal,
-                                              showCloseIcon: true,
-                                              content: Text(
-                                                  '$newValue rods selected'),
-                                            ));
-
-                                            // Make sure to call setState to update the UI
-                                            setState(() {
-                                              numberOfSticks = newValue;
-                                            });
-                                            // If _updateStickCount does additional work, call it here
-                                            _updateStickCount(newValue);
-                                            Navigator.of(context).pop();
-                                          }
-                                        },
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  }).toList(),
+                                  onChanged: (int? newValue) {
+                                    if (newValue != null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        duration: Durations.long4,
+                                        dismissDirection:
+                                            DismissDirection.horizontal,
+                                        showCloseIcon: true,
+                                        content:
+                                            Text('$newValue rods selected'),
+                                      ));
+
+                                      // Make sure to call setState to update the UI
+                                      setState(() {
+                                        numberOfSticks = newValue;
+                                      });
+                                      // If _updateStickCount does additional work, call it here
+                                      _updateStickCount(newValue);
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
                                 ),
-                                const SizedBox(height: 16),
-                                // Row(
-                                //   mainAxisAlignment:
-                                //       MainAxisAlignment.spaceBetween,
-                                //   children: [
-                                //     Text('Theme: '),
-                                //     FloatingActionButton(
-                                //       onPressed: _toggleTheme,
-                                //       child: Icon(isDarkMode
-                                //           ? Icons.light_mode
-                                //           : Icons.dark_mode),
-                                //     ),
-                                //   ],
-                                // ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      onTap: _toggleTheme,
+                      value: 'theme',
+                      child: Card(
+                        color: isDarkMode ? Colors.black : Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Text(
+                                  isDarkMode
+                                      ? 'Enable Light Mode'
+                                      : 'Enable Dark Mode',
+                                  style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  )),
+                              SizedBox(width: 10),
+                              Icon(
+                                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ];
                 },
-                child: Icon(
-                  Icons.settings,
-                ),
               ),
-              const SizedBox(width: 16),
-              FloatingActionButton(
-                enableFeedback: true,
-                onPressed: _toggleTheme,
-                child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-              ),
-              const SizedBox(width: 16),
-              FloatingActionButton(
-                enableFeedback: true,
-                onPressed: _resetAllBalls,
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Icon(Icons.refresh), Text("RESET")],
-                ),
-              ),
-            ],
+            )
+          ],
+        ),
+        backgroundColor: backgroundColor,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButton: FloatingActionButton(
+          enableFeedback: true,
+          onPressed: _resetAllBalls,
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Icon(Icons.refresh), Text("RESET")],
           ),
         ),
         body: SafeArea(
@@ -409,10 +414,10 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   Widget _buildVerticalLine(double top, double height, int stickIndex) {
     return Positioned(
       top: top,
-      left: lineHeight * 0.4,
+      left: lineHeight * 0.45,
       child: Container(
         height: height,
-        width: lineWidth,
+        width: lineWidth * 0.45,
         color: stickColor,
       ),
     );
@@ -425,7 +430,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
       builder: (context, pos, child) {
         return Positioned(
           top: pos,
-          left: lineHeight * 0.2,
+          left: lineWidth,
           child: GestureDetector(
             onPanUpdate: (details) => _handleBallMovement(
               stickIndex,
