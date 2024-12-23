@@ -136,126 +136,134 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: backgroundColor,
-        floatingActionButton: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FloatingActionButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return StatefulBuilder(
-                      builder: (context, setState) {
-                        return AlertDialog(
-                          title: Text('Settings'),
-                          alignment: Alignment.center,
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('Close'),
-                            ),
-                          ],
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Number of Rods: '),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    child: DropdownButton<int>(
-                                      isDense: true,
-                                      padding: EdgeInsets.all(4),
-                                      value: numberOfSticks,
-                                      // dropdownColor: Colors.grey[800],
-                                      style: TextStyle(
-                                        // Use the appropriate text color based on theme
-                                        color: Colors.black,
-                                      ),
-                                      items: stickOptions.map((int value) {
-                                        return DropdownMenuItem<int>(
-                                          value: value,
-                                          child: Text(
-                                            '$value',
-                                            style: TextStyle(
-                                              // Match the dropdown item text color with the button text color
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (int? newValue) {
-                                        if (newValue != null) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                            duration: Durations.long4,
-                                            dismissDirection:
-                                                DismissDirection.horizontal,
-                                            showCloseIcon: true,
-                                            content:
-                                                Text('$newValue rods selected'),
-                                          ));
-
-                                          // Make sure to call setState to update the UI
-                                          setState(() {
-                                            numberOfSticks = newValue;
-                                          });
-                                          // If _updateStickCount does additional work, call it here
-                                          _updateStickCount(newValue);
-                                          Navigator.of(context).pop();
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ],
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          width: MediaQuery.of(context).size.width * 1,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              FloatingActionButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return StatefulBuilder(
+                        builder: (context, setState) {
+                          return AlertDialog(
+                            title: Text('Settings'),
+                            alignment: Alignment.center,
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Close'),
                               ),
-                              const SizedBox(height: 16),
-                              // Row(
-                              //   mainAxisAlignment:
-                              //       MainAxisAlignment.spaceBetween,
-                              //   children: [
-                              //     Text('Theme: '),
-                              //     FloatingActionButton(
-                              //       onPressed: _toggleTheme,
-                              //       child: Icon(isDarkMode
-                              //           ? Icons.light_mode
-                              //           : Icons.dark_mode),
-                              //     ),
-                              //   ],
-                              // ),
                             ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-              child: Icon(Icons.settings),
-            ),
-            const SizedBox(width: 16),
-            FloatingActionButton(
-              onPressed: _toggleTheme,
-              child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            ),
-            const SizedBox(width: 16),
-            FloatingActionButton(
-              onPressed: _resetAllBalls,
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [Icon(Icons.refresh), Text("RESET")],
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Number of Rods: '),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      child: DropdownButton<int>(
+                                        isDense: true,
+                                        padding: EdgeInsets.all(4),
+                                        value: numberOfSticks,
+                                        // dropdownColor: Colors.grey[800],
+                                        style: TextStyle(
+                                          // Use the appropriate text color based on theme
+                                          color: Colors.black,
+                                        ),
+                                        items: stickOptions.map((int value) {
+                                          return DropdownMenuItem<int>(
+                                            value: value,
+                                            child: Text(
+                                              '$value',
+                                              style: TextStyle(
+                                                // Match the dropdown item text color with the button text color
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (int? newValue) {
+                                          if (newValue != null) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(SnackBar(
+                                              duration: Durations.long4,
+                                              dismissDirection:
+                                                  DismissDirection.horizontal,
+                                              showCloseIcon: true,
+                                              content: Text(
+                                                  '$newValue rods selected'),
+                                            ));
+
+                                            // Make sure to call setState to update the UI
+                                            setState(() {
+                                              numberOfSticks = newValue;
+                                            });
+                                            // If _updateStickCount does additional work, call it here
+                                            _updateStickCount(newValue);
+                                            Navigator.of(context).pop();
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Row(
+                                //   mainAxisAlignment:
+                                //       MainAxisAlignment.spaceBetween,
+                                //   children: [
+                                //     Text('Theme: '),
+                                //     FloatingActionButton(
+                                //       onPressed: _toggleTheme,
+                                //       child: Icon(isDarkMode
+                                //           ? Icons.light_mode
+                                //           : Icons.dark_mode),
+                                //     ),
+                                //   ],
+                                // ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+                child: Icon(
+                  Icons.settings,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              FloatingActionButton(
+                enableFeedback: true,
+                onPressed: _toggleTheme,
+                child: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+              ),
+              const SizedBox(width: 16),
+              FloatingActionButton(
+                enableFeedback: true,
+                onPressed: _resetAllBalls,
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Icon(Icons.refresh), Text("RESET")],
+                ),
+              ),
+            ],
+          ),
         ),
         body: SafeArea(
           child: Center(
@@ -311,6 +319,9 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                               section1Heights[stickIndex],
                                           section2Heights[stickIndex],
                                           stickIndex),
+                                      // Color(0XFF1877f2),
+                                      // Color(0XFF1da1f2),
+                                      // Color(0XFF0088cc),
                                       ...List.generate(
                                         4,
                                         (index) => _buildDraggableBall(
@@ -320,25 +331,24 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                                       numberOfSticks - 9 &&
                                                   index == 3)
                                               ? !isDarkMode
-                                                  ? const Color.fromARGB(
-                                                      255, 0, 100, 12)
+                                                  ? Color(0XFFff0000)
                                                   : Color.fromARGB(
-                                                      255, 228, 184, 42)
+                                                      255, 246, 190, 6)
                                               : (!isDarkMode
                                                   ? Colors.black87
-                                                  : Color(0XFF800020)),
+                                                  : Color(0XFF1877f2)),
+
                                           (numberOfSticks >= 9 &&
                                                   stickIndex ==
                                                       numberOfSticks - 9 &&
                                                   index == 3)
                                               ? !isDarkMode
-                                                  ? const Color.fromARGB(
-                                                      255, 0, 60, 7)
+                                                  ? Color(0XFFff0000)
                                                   : Color.fromARGB(
-                                                      255, 206, 196, 2)
+                                                      255, 221, 221, 32)
                                               : (!isDarkMode
                                                   ? Colors.black
-                                                  : Color(0XFFAD343E)),
+                                                  : Color(0XFF1da1f2)),
                                           !isDarkMode
                                               ? Colors.black
                                               : Colors.white,
@@ -347,15 +357,19 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                           true,
                                         ),
                                       ).reversed,
+
+                                      // Color(0XFFff0000),
+                                      // Color(0XFFbd081c),
+                                      // Color(0XFFc32aa3),
                                       _buildDraggableBall(
                                         !isDarkMode
                                             ? const Color.fromARGB(
                                                 255, 0, 100, 12)
-                                            : Color.fromARGB(255, 228, 184, 42),
+                                            : Color(0XFFff0000),
                                         !isDarkMode
                                             ? const Color.fromARGB(
                                                 255, 0, 60, 7)
-                                            : Color.fromARGB(255, 206, 196, 2),
+                                            : Color(0XFFbd081c),
                                         !isDarkMode
                                             ? Colors.black
                                             : Colors.white,
@@ -452,7 +466,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                   BoxShadow(
                     color: Colors.white.withOpacity(0.8),
                     blurRadius: 10,
-                    spreadRadius: -5,
+                    spreadRadius: -6,
                     offset: const Offset(-3, -3),
                   ),
                 ],
