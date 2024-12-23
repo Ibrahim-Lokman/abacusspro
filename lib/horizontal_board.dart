@@ -163,12 +163,18 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                     PopupMenuItem(
                       value: 'Rods',
                       child: Card(
+                        color: isDarkMode ? Colors.black : Colors.white,
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Number of Rods: '),
+                              Text('Number of Rods: ',
+                                  style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  )),
                               Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
@@ -176,6 +182,8 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
                                 child: DropdownButton<int>(
+                                  dropdownColor:
+                                      isDarkMode ? Colors.black : Colors.white,
                                   isDense: true,
                                   padding: EdgeInsets.all(4),
                                   value: numberOfSticks,
@@ -190,9 +198,11 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                       child: Text(
                                         '$value',
                                         style: TextStyle(
-                                          // Match the dropdown item text color with the button text color
-                                          color: Colors.black,
-                                        ),
+                                            // Match the dropdown item text color with the button text color
+                                            color: isDarkMode
+                                                ? Colors.white
+                                                : Colors.black,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     );
                                   }).toList(),
@@ -257,19 +267,33 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                   ];
                 },
               ),
-            )
+            ),
+            Card(
+              color: isDarkMode ? Colors.white : Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: InkWell(
+                  splashColor: Colors.transparent,
+                  onTap: _resetAllBalls,
+                  child: Column(
+                    children: [
+                      Icon(Icons.refresh,
+                          color: isDarkMode ? Colors.black : Colors.white),
+                      Text(
+                        "RESET",
+                        style: TextStyle(
+                            color: isDarkMode ? Colors.black : Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
         backgroundColor: backgroundColor,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: FloatingActionButton(
-          enableFeedback: true,
-          onPressed: _resetAllBalls,
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [Icon(Icons.refresh), Text("RESET")],
-          ),
-        ),
         body: SafeArea(
           child: Center(
             child: LayoutBuilder(builder: (context, constraints) {
