@@ -10,7 +10,7 @@ class HorMultipleSticks extends StatefulWidget {
 }
 
 class _HorMultipleSticksState extends State<HorMultipleSticks> {
-  int numberOfSticks = 17; // Changed from static to instance variable
+  int numberOfSticks = 13; // Changed from static to instance variable
   bool isDarkMode = true;
   late double ballSize;
   late double stickStart;
@@ -26,7 +26,8 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
   late List<double> maxSection2Positions;
 
   // Available stick count options
-  final List<int> stickOptions = [5, 7, 9, 11, 13, 15, 17];
+  // final List<int> stickOptions = [1, 3, 5, 7, 9, 11, 13, 15, 17];
+  final List<int> stickOptions = [for (int i = 17; i >= 1; i -= 1) i];
 
   // Theme colors
   late Color backgroundColor;
@@ -200,8 +201,8 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                                             dismissDirection:
                                                 DismissDirection.horizontal,
                                             showCloseIcon: true,
-                                            content: Text(
-                                                '$numberOfSticks rods selected'),
+                                            content:
+                                                Text('$newValue rods selected'),
                                           ));
 
                                           // Make sure to call setState to update the UI
