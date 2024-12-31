@@ -240,7 +240,7 @@ class _HorMultipleSticksState extends State<HorMultipleSticks> {
                       child: Card(
                         color: isDarkMode ? Colors.black : Colors.white,
                         child: Padding(
-                          padding: const EdgeInsets.all(4.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             mainAxisSize: MainAxisSize.max,
